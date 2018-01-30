@@ -19,7 +19,7 @@ parser.add_argument('--learning_rate', type=float, default=1.0, help='Initial le
 parser.add_argument('--momentum', type=float, default=0.9, help='Initial learning rate [default: 0.9]')
 parser.add_argument('--decay_step', type=int, default=20000, help='Decay step for lr decay [default: 20000]')
 parser.add_argument('--decay_rate', type=float, default=0.1, help='Decay rate for lr decay [default: 0.1]')
-parser.add_argument('--manifold_weight', type=float, default=0.15, help='Decay weight for manifold loss [default: 0.0]')
+parser.add_argument('--manifold_weight', type=float, default=0.1, help='Decay weight for manifold loss [default: 0.0]')
 parser.add_argument('--dropout_rate', type=float, default=0.5, help='Dropout pass rate [default: 0.6]')
 parser.add_argument('--num_sample', type=int, default=30, help='Number of sample saved in the buffer [default: 30]')
 parser.add_argument('--weight_decay', type=float, default=0.00005, help='Weight decay for conv layers [default: 0.00005]')
@@ -136,11 +136,11 @@ def train_data(input_data, is_training):
 
 def cal_loss(output, label):
     with tf.name_scope('loss'):
-        soft_out = tf.nn.softmax(output)
-        focal_temp = tf.one_hot(label, 10, on_value=1.0, off_value=1.0)
-        focal_beta = focal_temp - soft_out
+        soft_out = tf.nn.softmax(output)       
+        focal_temp = 1 - soft_out
+        focal_beta = focal_temp * focal_temp
         label_oh = tf.one_hot(label, 10, on_value=1.0, off_value=0.0)
-        loss = tf.reduce_mean(-focal_beta * focal_beta * label_oh * tf.log(soft_out + 0.00000001))
+        loss = tf.reduce_mean(-focal_beta * label_oh * tf.log(soft_out + 0.00000001))
         tf.summary.scalar('loss_ce', loss)
         tf.add_to_collection('losses', loss)
         loss_all = tf.add_n(tf.get_collection('losses'), name='total_loss')
