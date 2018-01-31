@@ -138,7 +138,7 @@ def cal_loss(output, label):
     with tf.name_scope('loss'):
         soft_out = tf.nn.softmax(output)       
         focal_temp = 1 - soft_out
-        focal_beta = focal_temp * focal_temp
+        focal_beta = focal_temp #* focal_temp
         label_oh = tf.one_hot(label, 10, on_value=1.0, off_value=0.0)
         loss = tf.reduce_mean(-focal_beta * label_oh * tf.log(soft_out + 0.00000001))
         tf.summary.scalar('loss_ce', loss)
